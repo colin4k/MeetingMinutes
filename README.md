@@ -45,11 +45,11 @@ pip3 install ffmpeg-python
 ## Usage
 
 ```bash
-src/script.sh file_name.mkv -ss <start_time> -to <end_time>
+src/script.sh <file_name> [-ss <start_time>] [-to <end_time>]
 ```
 
 > [!WARNING]
-> The file must be a `.mkv`.
+> The file must be a `.mp3` or `.mkv`.
 
 When you run the script, it will ask you whether you want to run the complete script or just the transcript.
 The complete script includes transcript, summary, key points and action points.
