@@ -30,6 +30,7 @@ sudo apt install python3-pip
 pip3 install openai
 pip3 install python-docx
 pip3 install pydub
+pip3 install ffmpeg-python
 ```
 
 > [!NOTE]
@@ -39,6 +40,7 @@ pip3 install pydub
 > | openai | 0.28.0 |
 > | python-docx | 1.1.0 |
 > | pydub | 0.25.1 |
+> | ffmpeg-python | 0.2.0 |
 
 ## Usage
 
