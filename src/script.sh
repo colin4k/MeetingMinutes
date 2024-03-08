@@ -2,7 +2,7 @@
 
 # Checking the number of parameters
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <file_name.mkv> [-ss <start_time>] [-to <end_time>]"
+    echo "Usage: $0 <file_name> [-ss <start_time>] [-to <end_time>]"
     exit 1
 fi
 
