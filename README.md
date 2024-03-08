@@ -11,7 +11,7 @@ Team : Théo Pirouelle
 ## Preamble
 
 To use the script, you'll need an [OpenAI API key](https://platform.openai.com/account/api-keys) for Whisper and GPT-4.
-You will therefore need to modify the `openai.api_key` variable for the script to work properly.
+You'll need to create a `.env` file with the `API_KEY` variable with your API key for the script to work properly.
 
 The script on the repository is configured in French; it's easy to modify the script to adapt it to another language (just translate the few instructions given to GPT).
 
@@ -30,10 +30,18 @@ pip3 install python-docx
 pip3 install pydub
 ```
 
+> [!NOTE]
+> For information, the code has been developed and works with the following library versions:
+> | Library | Version |
+> | --- | --- |
+> | openai | 0.28.0 |
+> | python-docx | 1.1.0 |
+> | pydub | 0.25.1 |
+
 ## Usage
 
 ```bash
-python3 main.py file_name.mp3
+python3 src/meetingMinutes.py file_name.mp3
 ```
 
 > [!WARNING]
