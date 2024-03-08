@@ -22,6 +22,8 @@ You will also need to install the necessary :
 ```bash
 sudo apt-get update
 
+sudo apt install ffmpeg
+
 sudo apt install python3
 sudo apt install python3-pip
 
@@ -41,27 +43,16 @@ pip3 install pydub
 ## Usage
 
 ```bash
-python3 src/meetingMinutes.py file_name.mp3
+src/script.sh file_name.mkv -ss <start_time> -to <end_time>
 ```
 
 > [!WARNING]
-> The file must be a `.mp3`.
+> The file must be a `.mkv`.
 
 When you run the script, it will ask you whether you want to run the complete script or just the transcript.
 The complete script includes transcript, summary, key points and action points.
 
 You can change the model used in the code by modifying the `model_gpt` variable. You can find a list of the different GPT models supported on the [OpenAI site](https://platform.openai.com/docs/guides/function-calling), along with the methods of use for API calls.
-
-
-If you get the error that the `mp3` file is too heavy, feel free to cut it to make it lighter with the following commands:
-
-```bash
-# Tool installation
-sudo apt install ffmpeg
-
-# Using ffmpeg
-ffmpeg -i test.mp3 -ss 00:00:30 -to 00:10:00 -c copy output.mp3  # Here from 30 seconds to 10 minutes
-```
 
 ## Performance
 
