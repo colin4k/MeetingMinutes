@@ -30,6 +30,7 @@ pip3 install openai
 pip3 install python-docx
 pip3 install pydub
 pip3 install ffmpeg-python
+pip3 install customtkinter
 ```
 
 > [!NOTE]
@@ -40,6 +41,7 @@ pip3 install ffmpeg-python
 > | python-docx | 1.1.0 |
 > | pydub | 0.25.1 |
 > | ffmpeg-python | 0.2.0 |
+> | customtkinter | 4.0.2 |
 
 ## Usage
 

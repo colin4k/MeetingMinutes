@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import datetime
 import tempfile
 import math
@@ -14,6 +13,7 @@ from docx import Document
 model_whisper = "whisper-1"
 model_gpt = "gpt-4-1106-preview"
 
+
 def split_audio(file_path):
     """
     Cutting the audio file so that it can be processed within the limits of the API.
@@ -25,6 +25,7 @@ def split_audio(file_path):
     chunk_length_ms = math.floor(0.9 * 1000 * (max_size / (audio.frame_rate * audio.frame_width)))
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), int(chunk_length_ms))]
     return chunks
+
 
 def transcribe_audio(audio_chunks):
     """
@@ -43,6 +44,7 @@ def transcribe_audio(audio_chunks):
                 transcription = openai.Audio.transcribe(model_whisper, f)
             transcriptions.append(transcription['text'])
     return " ".join(transcriptions)
+
 
 def abstract_summary_extraction(transcription):
     """
@@ -66,6 +68,7 @@ def abstract_summary_extraction(transcription):
     )
     return response['choices'][0]['message']['content']
 
+
 def key_points_extraction(transcription):
     """
     From the audio file transcript, create a list of key points.
@@ -87,6 +90,7 @@ def key_points_extraction(transcription):
         ]
     )
     return response['choices'][0]['message']['content']
+
 
 def action_item_extraction(transcription):
     """
@@ -110,6 +114,7 @@ def action_item_extraction(transcription):
     )
     return response['choices'][0]['message']['content']
 
+
 def meeting_minutes(transcription):
     """
     Execution of all extractions.
@@ -125,6 +130,7 @@ def meeting_minutes(transcription):
         'key_points': key_points,
         'action_items': action_items
     }
+
 
 def save_as_docx(minutes, filename, output_dir):
     """
@@ -148,31 +154,20 @@ def save_as_docx(minutes, filename, output_dir):
     doc.save(filename)
 
 
-if __name__ == '__main__':
+def meeting_minutes_main(audio_file_path, choice, name_docx=None):
+    """
+    Main code for switching from an audio file to a transcription in a text file.
+    :param audio_file_path: Path to the audio file (`.mp3`)
+    :param choice: Choice between transcribing only or performing all actions ('Full' or 'Transcription')
+    :param name_docx: Name of output text file (optional)
+    """
     # Configuration
     dotenv.load_dotenv()
     api_key = os.getenv('API_KEY')
     if api_key is None:
         print("API_KEY variable is not set: set it.")
         sys.exit(1)
-
-    if len(sys.argv) != 2:
-        print("Usage: python3 src/meetingMinutes.py <audio_file_path>")
-        sys.exit(1)
-    audio_file_path = sys.argv[1]
     openai.api_key = api_key
-
-    # Ask the user if they want to run the full script or just the transcription
-    while True:
-        choice = input(
-            "Voulez-vous exécuter le script complet (entrez 'F') ou seulement la transcription (entrez 'T') ? ").lower().strip()
-        if choice in ['f', 't']:
-            break
-        else:
-            print("Option non valide, veuillez saisir 'F' ou 'T'.")
-
-    # Start timer
-    start = time.time()
 
     # Split audio into chunks
     audio_chunks = split_audio(audio_file_path)
@@ -181,11 +176,11 @@ if __name__ == '__main__':
     transcription = transcribe_audio(audio_chunks)
 
     # Check user's choice
-    if choice == 'f':
+    if choice == 'Full':
         # If user chose 'full', perform all actions
         minutes = meeting_minutes(transcription)
         print("Minutes prepared.")
-    elif choice == 't':
+    elif choice == 'Transcription':
         # If user chose 'transcribe', only save the transcription
         minutes = {
             'complete_transcription': transcription
@@ -195,11 +190,12 @@ if __name__ == '__main__':
         print("Invalid option. Exiting.")
         sys.exit(1)
 
+    # Creating the output file
     output_dir = "output"
-    now = datetime.datetime.now()
-    formatted_date = now.strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"{output_dir}/meeting_minutes_{formatted_date}.docx"
+    if name_docx is None:
+        now = datetime.datetime.now()
+        formatted_date = now.strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"{output_dir}/meeting_minutes_{formatted_date}.docx"
+    else:
+        filename = f"{output_dir}/{name_docx}.docx"
     save_as_docx(minutes, filename, output_dir)
-
-    # End timer
-    print(f'meetingMinutes.py runtime: {time.strftime("%H:%M:%S", time.gmtime(time.time() - start))}')
