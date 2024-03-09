@@ -169,7 +169,6 @@ class App(customtkinter.CTk):
         self.title("Meeting Minutes")
         self.geometry("600x420")
         self.resizable(False, False)
-        # self.iconbitmap("/mnt/d/PersonnalPrograms/PythonProjects/MeetingMinutes/src/icon.ico")
 
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0, 1, 2), weight=1)

@@ -1,6 +1,9 @@
 .idea/
 output/
 src/__pycache__/
+build/
+dist/
+application.spec
 .env
 *.mkv
 *.mp4

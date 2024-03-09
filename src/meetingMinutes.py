@@ -1,10 +1,10 @@
 import os
 import sys
 import datetime
-import tempfile
+import uuid
 import math
-import dotenv
 
+import dotenv
 import openai
 from pydub import AudioSegment
 from docx import Document
@@ -35,14 +35,24 @@ def transcribe_audio(audio_chunks):
     """
     transcriptions = []
     for chunk in audio_chunks:
-        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=True) as temp_audio_file:
-            chunk.export(temp_audio_file.name, format="mp3", bitrate="192k")  # You can adjust the bitrate as needed
-            file_size = os.path.getsize(temp_audio_file.name)
-            if file_size > 25 * 1024 * 1024:
-                raise ValueError("Audio chunk is too large: {} bytes".format(file_size))
-            with open(temp_audio_file.name, 'rb') as f:
-                transcription = openai.Audio.transcribe(model_whisper, f)
-            transcriptions.append(transcription['text'])
+        temp_filename = "temp_audio_{}.mp3".format(uuid.uuid4())
+        temp_audio_path = os.path.join("output", temp_filename)
+
+        chunk.export(temp_audio_path, format="mp3", bitrate="192k")  # You can adjust the bitrate as needed
+        file_size = os.path.getsize(temp_audio_path)
+
+        if file_size > 25 * 1024 * 1024:
+            os.remove(temp_audio_path)
+            raise ValueError("Audio chunk is too large: {} bytes".format(file_size))
+
+        with open(temp_audio_path, 'rb') as f:
+            transcription = openai.Audio.transcribe(model_whisper, f)
+
+        transcriptions.append(transcription['text'])
+
+        # Cleaning
+        os.remove(temp_audio_path)
+
     return " ".join(transcriptions)
 
 

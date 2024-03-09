@@ -80,8 +80,7 @@ def cutting_mp3(mp3_file_path, name_mp3_file=None, start_time=None, end_time=Non
         print(f"The file '{mp3_file_path}' has been successfully cut to '{name_mp3_file}'.")
 
         # Cleaning
-        if os.path.exists(os.path.join(output_dir, os.path.basename(mp3_file_path))):
-            os.remove(f"{output_dir}/temp.mp3")
+        os.remove(f"{output_dir}/temp.mp3")
 
         return name_mp3_file
     except ffmpeg.Error as e:
