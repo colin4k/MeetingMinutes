@@ -27,11 +27,12 @@ The script on the repository is configured in French; it's easy to modify the sc
 > For information, the code has been developed and works with the following library versions:
 > | Library | Version |
 > | --- | --- |
-> | openai | 0.28.0 |
-> | python-docx | 1.1.0 |
+> | openai | 1.43.0 |
+> | groq | 0.10.0 |
+> | python-docx | 1.1.2 |
 > | pydub | 0.25.1 |
 > | ffmpeg-python | 0.2.0 |
-> | customtkinter | 4.0.2 |
+> | customtkinter | 5.2.2 |
 
 ### Linux
 
@@ -45,7 +46,7 @@ sudo apt install python3-pip
 
 pip3 install customtkinter
 pip3 install python-dotenv
-pip3 install openai==0.28
+pip3 install openai
 pip3 install pydub
 pip3 install python-docx
 pip3 install ffmpeg-python
@@ -70,7 +71,7 @@ You will also need to install the necessary :
 ```shell
 pip install customtkinter
 pip install python-dotenv
-pip install openai==0.28
+pip install openai
 pip install pydub
 pip install python-docx
 pip install ffmpeg-python
