@@ -50,6 +50,7 @@ pip3 install openai
 pip3 install pydub
 pip3 install python-docx
 pip3 install ffmpeg-python
+pip3 install groq
 ```
 
 ### Windows
@@ -75,6 +76,7 @@ pip install openai
 pip install pydub
 pip install python-docx
 pip install ffmpeg-python
+pip3 install groq
 ```
 
 ## Build
