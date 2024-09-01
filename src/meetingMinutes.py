@@ -5,13 +5,14 @@ import uuid
 import math
 
 import dotenv
-import openai
+from groq import Groq
 from pydub import AudioSegment
 from docx import Document
 
 # Models
-model_whisper = "whisper-1"
-model_gpt = "gpt-4-1106-preview"
+model_whisper = "whisper-large-v3"
+#model_gpt = "llama3-groq-70b-8192-tool-use-preview"
+model_gpt = "llama-3.1-70b-versatile"
 
 
 def split_audio(file_path):
@@ -27,7 +28,7 @@ def split_audio(file_path):
     return chunks
 
 
-def transcribe_audio(audio_chunks):
+def transcribe_audio(client,audio_chunks):
     """
     Convert audio files that have been cut into chunks into text.
     :param audio_chunks: Audio file cut into chunks
@@ -46,9 +47,12 @@ def transcribe_audio(audio_chunks):
             raise ValueError("Audio chunk is too large: {} bytes".format(file_size))
 
         with open(temp_audio_path, 'rb') as f:
-            transcription = openai.Audio.transcribe(model_whisper, f)
-
-        transcriptions.append(transcription['text'])
+            transcription = client.audio.transcriptions.create(file=f, model=model_whisper)
+            
+        if "请不吝点赞 订阅 转发 打赏支持明镜与点点栏目" in transcription.text:
+            continue
+        
+        transcriptions.append(transcription.text)
 
         # Cleaning
         os.remove(temp_audio_path)
@@ -56,19 +60,19 @@ def transcribe_audio(audio_chunks):
     return " ".join(transcriptions)
 
 
-def abstract_summary_extraction(transcription):
+def abstract_summary_extraction(client,transcription):
     """
     From the audio file transcript, create a summary.
     :param transcription: Transcription of audio file
     :return: Abstract summary
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=model_gpt,
         temperature=0,
         messages=[
             {
                 "role": "system",
-                "content": "Vous êtes une IA hautement qualifiée, formée à la compréhension et à la synthèse du langage. Sur la base du texte suivant, résumez en un paragraphe abstrait et concis. Essayez de retenir les points les plus importants, en fournissant un résumé cohérent et lisible qui pourrait aider une personne à comprendre les points principaux de la discussion sans avoir besoin de lire le texte en entier. Veuillez éviter les détails inutiles ou les points tangentiels."
+                "content": "您是一位训练有素、高度熟练的人工智能，能够理解和综合语言。根据以下文本，用一个抽象且简洁的段落进行总结。请尝试记住最重要的要点，提供一个连贯且可读的摘要，它可以帮助人们理解讨论的主要观点，而无需阅读全文。请避免不必要的细节或无关要点。"
             },
             {
                 "role": "user",
@@ -76,22 +80,23 @@ def abstract_summary_extraction(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
+    response_dict = response.model_dump()
+    return response_dict['choices'][0]['message']['content']
 
 
-def key_points_extraction(transcription):
+def key_points_extraction(client,transcription):
     """
     From the audio file transcript, create a list of key points.
     :param transcription: Transcription of audio file
     :return: Key points
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=model_gpt,
         temperature=0,
         messages=[
             {
                 "role": "system",
-                "content": "Vous êtes une IA hautement qualifiée, spécialisé dans la distillation d'informations en points clés. Sur la base du texte suivant, identifiez et listez les points principaux qui ont été discutés ou évoqués. Il doit s'agir des idées, des résultats ou des sujets les plus importants qui sont cruciaux pour l'essence de la discussion. Votre objectif est de fournir une liste que quelqu'un pourrait lire pour comprendre rapidement ce qui a été discuté."
+                "content": "您是一位训练有素的人工智能，专门从关键点中提取信息。根据以下文本，识别并列出已讨论或提及的主要要点。这些应该是对讨论本质至关重要的最重要的想法、结果或主题。您的目标是提供一份清单，以便某人可以快速阅读以了解已讨论的内容。"
             },
             {
                 "role": "user",
@@ -99,22 +104,23 @@ def key_points_extraction(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
+    response_dict = response.model_dump()
+    return response_dict['choices'][0]['message']['content']
 
 
-def action_item_extraction(transcription):
+def action_item_extraction(client,transcription):
     """
     From the audio file transcript, create a list of action item.
     :param transcription: Transcription of audio file
     :return: Action item
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model=model_gpt,
         temperature=0,
         messages=[
             {
                 "role": "system",
-                "content": "Vous êtes une IA hautement qualifiée, spécialisé dans l'analyse des conversations et de l'extraction des actions à entreprendre. Sur la base du texte suivant, identifiez les tâches, les missions ou les actions qui ont été convenues ou mentionnées comme devant être réalisées. Il peut s'agir de tâches assignées à des personnes spécifiques ou d'actions générales que le groupe a décidé d'entreprendre. Veuillez dresser une liste claire et concise de ces actions."
+                "content": "您是一位训练有素的 AI，专门分析对话并提取需要执行的操作。根据以下文本，找出已达成一致或提及需要执行的任务、使命或操作。这些可能是分配给特定人员的任务，也可能是小组决定采取的常规操作。请列出这些操作的清晰简洁的清单。"
             },
             {
                 "role": "user",
@@ -122,18 +128,19 @@ def action_item_extraction(transcription):
             }
         ]
     )
-    return response['choices'][0]['message']['content']
+    response_dict = response.model_dump()
+    return response_dict['choices'][0]['message']['content']
 
 
-def meeting_minutes(transcription):
+def meeting_minutes(client,transcription):
     """
     Execution of all extractions.
     :param transcription: Transcription of audio file
     :return: List of all extractions
     """
-    abstract_summary = abstract_summary_extraction(transcription)
-    key_points = key_points_extraction(transcription)
-    action_items = action_item_extraction(transcription)
+    abstract_summary = abstract_summary_extraction(client,transcription)
+    key_points = key_points_extraction(client,transcription)
+    action_items = action_item_extraction(client,transcription)
     return {
         'complete_transcription': transcription,
         'abstract_summary': abstract_summary,
@@ -173,22 +180,22 @@ def meeting_minutes_main(audio_file_path, choice, name_docx=None):
     """
     # Configuration
     dotenv.load_dotenv()
-    api_key = os.getenv('API_KEY')
+    api_key = os.getenv('GROQ_API_KEY')
     if api_key is None:
         print("API_KEY variable is not set: set it.")
         sys.exit(1)
-    openai.api_key = api_key
+    client = Groq(api_key= api_key,)
 
     # Split audio into chunks
     audio_chunks = split_audio(audio_file_path)
 
     # Always perform transcription
-    transcription = transcribe_audio(audio_chunks)
+    transcription = transcribe_audio(client,audio_chunks)
 
     # Check user's choice
     if choice == 'Full':
         # If user chose 'full', perform all actions
-        minutes = meeting_minutes(transcription)
+        minutes = meeting_minutes(client,transcription)
         print("Minutes prepared.")
     elif choice == 'Transcription':
         # If user chose 'transcribe', only save the transcription
